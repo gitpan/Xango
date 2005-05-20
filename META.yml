@@ -1,0 +1,24 @@
+--- #YAML:1.0
+name: Xango
+version: 0.06
+author:
+  - |-
+    Copyright 2005 Daisuke Maki E<lt>dmaki@cpan.orgE<gt>. All rights reserved.
+    Development funded by Brazil, Ltd. E<lt>http://b.razil.jpE<gt>
+abstract: Event Based High Performance Web Crawler Framework
+license: perl
+requires:
+  Log::Dispatch: 0
+  POE: 0
+  YAML: 0
+build_requires:
+  Test::More: 0
+provides:
+  Xango:
+    file: lib/Xango.pm
+    version: 0.06
+  Xango::Broker:
+    file: lib/Xango/Broker.pm
+  Xango::Config:
+    file: lib/Xango/Config.pm
+generated_by: Module::Build version 0.25

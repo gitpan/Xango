@@ -1,0 +1,30 @@
+Changes
+=======
+
+Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
+
+0.06 - 20 May 2005
+ - Build.PL tweaks
+
+0.05 - 08 May 2005
+ - Remove processors from distribution.
+ - Doc tweaks.
+
+0.04 - 24 Apr 2005
+
+ - Add HttpComponentClass, HttpComponent, JobRetrievalDelay, ReloadConfig
+   to config parameters
+ - Add Log::Dispatch
+
+0.03 - 24 Mar 2005
+  - rename xago-broker to xango (no need, as Xango has been integrated
+    into one process, rather than multiple)
+  - remove unneeded prerequisites
+
+0.02 - 17 Mar 2005
+  - Configuration variables noted
+  - handle sigpipe in case remote servers kill their connection
+    (PoCo::Component::HTTP does not handle this)
+
+0.01 - 07 Feb 2005
+  - Renamed to Xango from Brazil-Crawler

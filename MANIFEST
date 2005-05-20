@@ -1,0 +1,11 @@
+bin/xango
+Build.PL
+Changes
+lib/Xango.pm
+lib/Xango/Broker.pm
+lib/Xango/Config.pm
+MANIFEST			This list of files
+META.yml
+t/01-sanity.t
+
+SIGNATURE    Added here by Module::Build
