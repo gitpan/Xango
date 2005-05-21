@@ -1,11 +1,10 @@
-# $Id: Broker.pm 59 2005-05-15 12:20:46Z daisuke $
+# $Id: Broker.pm 62 2005-05-21 21:11:12Z daisuke $
 #
 # Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
 
 package Xango::Broker;
 use strict;
-use File::Temp ();
 use HTTP::Request;
 use POE;
 use Xango::Config;
@@ -26,7 +25,7 @@ sub spawn
 
     my @jobs;
     my %heap = (
-        DNS_COMP_ALIAS => 'dns',
+        DNS_COMP_ALIAS => 'xango-dns',
         DNS_PENDING    => {},
         PENDING_JOBS   => \@jobs,
         FETCHERS       => {},
@@ -55,7 +54,7 @@ sub load_config
         Xango::debug("[load_config]: Reloading config from $config_file");
     }
 
-    Xango::Config->init($config_file);
+    Xango::Config->init($config_file, { force_reload => 1});
 
     my $cache_class =
         Xango::Config->param('DnsCacheClass') || DEFAULT_CACHE_CLASS;
@@ -74,7 +73,7 @@ sub load_config
     }
     my $cache            = $cache_class->new($cache_args);
 
-    my $job_retrieval_delay = Xango::Config->param('JobRetrievalDelay');
+    my $job_retrieval_delay = int(Xango::Config->param('JobRetrievalDelay'));
     if ($job_retrieval_delay <= 0) {
         $job_retrieval_delay = 15;
     }
@@ -84,9 +83,9 @@ sub load_config
         $reload = 0;
     }
 
-    my $max_agents       = Xango::Config->param('MaxHttpAgents');
-    my $max_silence      = Xango::Config->param('MaxSilenceInterval');
-    my $http_timeout     = Xango::Config->param('HttpTimeout');
+    my $max_agents       = int(Xango::Config->param('MaxHttpAgents'));
+    my $max_silence      = int(Xango::Config->param('MaxSilenceInterval'));
+    my $http_timeout     = int(Xango::Config->param('HttpTimeout'));
     my $dns_comp_class   = Xango::Config->param('DnsCompClass') || DEFAULT_DNS_COMP_CLASS;
     my $http_comp_class  = Xango::Config->param('HttpComponentClass') || DEFAULT_HTTP_COMP_CLASS;
     my $http_comp_args   = Xango::Config->param('HttpComponentArgs') || DEFAULT_HTTP_COMP_ARGS;
@@ -164,13 +163,13 @@ sub _start
     $kernel->sig(TERM => 'die_from_sig', 'TERM');
     $kernel->sig(HUP  => 'load_config',  $heap->{CONFIG_FILE});
 
-    POE::Component::Client::DNS->spawn(
+    $heap->{DNS_COMP_CLASS}->spawn(
         Alias => $heap->{DNS_COMP_ALIAS},
         Timeout => 45
     );
 
     $kernel->call(
-        $kernel->get_active_session(),
+        $session,
         'spawn_http_comp',
         $heap->{MAX_HTTP_COMP} > 10 ? 10 : $heap->{MAX_HTTP_COMP}
     );
@@ -393,7 +392,7 @@ sub send_fetcher
             my $list = $heap->{DNS_PENDING}{$host};
             push @$list, $job;
             $kernel->post(
-                'dns',
+                $heap->{DNS_COMP_ALIAS},
                 'resolve',
                 'got_dns_response',
                 $host
@@ -419,7 +418,7 @@ sub send_fetcher
         $job->{uri}->host($job->{host_ip});
     }
     my $request = HTTP::Request->new(GET => $job->{uri});
-    $kernel->call('handler', 'prep_request', $request);
+    $kernel->call('handler', 'prep_request', $job, $request);
     if ($job->{host_name}) {
         $request->header(Host => $job->{host_name});
     }
@@ -579,7 +578,7 @@ Xango::Broker - Broker HTTP Requests
 
 =head1 DESCRIPTION
 
-Xango is a generic web crawler framework is written using POE 
+Xango is a generic web crawler framework written using POE 
 (http://poe.perl.org), a cooperative multitasking framework.
 
 Xango::Broker is Xango's main POE component but it doesn't do much by itself:
@@ -633,13 +632,19 @@ details.
 
 =head2 HttpComponentClass (string)
 
+=over 4
+
 Class name of the POE component that handles HTTP communication. You may
 specify any class, so as long as it has interfaces matching
 POE::Component::Client::HTTP.
 
 Defaults to 'POE::Component::Client::HTTP'
 
+=back
+
 =head2 HttpComponentArgs (list or hash)
+
+=over 4
 
 Arguments that are passed to the spawn() method of the HTTP component class.
 You almost always want to specify the 'Timeout' parameter if you're using
@@ -648,17 +653,31 @@ POE::Component::Client::HTTP (or the like)
 Note that you may not specify the 'Alias' parameter. This is internally
 used by Xango::Broker. If you specify it, it will silently be ignored
 
+=back
+
 =head2 DnsCacheClass (string)
 
-Class name of the cache object to hold DNS query results. Defaults to
+=over 4
+
+Xango internally caches DNS lookup results to avoid the overhead of having
+to query for IP address. This configuration variable specifies the
+class name of the cache object to hold DNS query results. Defaults to
 L<Cache::FileCache|Cache::FileCache>.
 
+=back
+
 =head2 DnsCacheArgs (hash)
+
+=over 4
 
 Arguments to pass to the cache constructor. You must provide this if you
 are using anything other than Cache::FileCache as your cache class.
 
+=back
+
 =head2 MaxHttpAgents (integer)
+
+=over 4
 
 The number of concurrent http agents (i.e. the number of
 POE::Component::Client::HTTP sessions) that are allowed. The default is 10,
@@ -671,21 +690,35 @@ agents to handle the currently available jobs, until the maximum is reached.
 
 If the max is less than 10, the starting number if equal to the max.
 
+=back
+
 =head2 MaxSilenceInterval (integer)
+
+=over 4
 
 The number of seconds that we allow an agent to be inactive for. Once a fetcher
 session is inactive for this much amount of time, the sessions is stopped
 via detach_child(). The default is 300 seconds.
 
+=back
+
 =head2 JobRetrievalDelay (integer)
+
+=over 4
 
 The number of seconds to wait between calls to 'retrieve_job' state of the
 handler session. The default is 15 seconds.
 
+=back
+
 =head2 ReloadConfig (integer)
+
+=over 4
 
 The number of seconds to wait before reloading configuration parameters from
 the config file. If set to 0, reload is disabled.
+
+=back
 
 =head1 HANDLER API
 
@@ -708,9 +741,21 @@ method so that the alias is set properly:
      $kernel->alias_remove('handler');
   }
 
+Below are the states that are recognized in the handler session. Those states
+with a (*) next to them are mandatory:
+
+=head2 load_config
+
 =over 4
 
-=item retrieve_jobs
+This state is called whenever the configuration is (re)loaded from a file.
+Use this state to refresh variables that are specific to the handler.
+
+=back
+
+=head2 retrieve_jobs (*)
+
+=over 4
 
 This state is responsible for retrieve jobs to be processed by Xango
 from wherever you decide to store your original data (RDBMS, file system,
@@ -736,7 +781,11 @@ named 'uri'. You may add any other elements, except 'id', 'fetcher',
 This state is called as a synchronous call via POE::Kernel-E<gt>call(),
 so don't take forever to get the jobs to be processed!
 
-=item apply_policy
+=back
+
+=head2 apply_policy (*)
+
+=over 4
 
 This receives a job hash, and is supposed to figure if the particular job
 should be processed at all. Use this to apply black policy rules at the
@@ -770,7 +819,23 @@ broker session's 'finalize_job' state
 
 The job hash will be available in ARG0
 
-=item handle_response
+=back
+
+=head2 prep_request
+
+=over 4
+
+Called right before the request is sent, you are given a chance to muck with
+the HTTP request in this state.
+
+The job hash will be available in ARG0, the HTTP::Request object will be
+available in ARG1
+
+=back
+
+=head2 handle_response (*)
+
+=over 4
 
 As the name states, this state should handle the job, after the job's
 URI has been fetched. The HTTP::Response object is stored under the
@@ -783,7 +848,11 @@ It is up to you to cook this piece of data, and store the results somewhere
 
 The job hash will be available in ARG0
 
-=item finalize_job
+=back
+
+=head2 finalize_job
+
+=over 4
 
 This is sort of like a destructor for the job. The broker does its own
 cleanup, and then sends the job to the handler's 'finalize_job' state so

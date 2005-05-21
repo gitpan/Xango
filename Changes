@@ -3,6 +3,12 @@ Changes
 
 Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
 
+0.07 - 22 May 2005
+ - Doc tweaks.
+ - Properly use DnsComponentClass
+ - Properly use DNS_COMP_ALIAS
+ - Fix Xango::Config::init()
+
 0.06 - 20 May 2005
  - Build.PL tweaks
 

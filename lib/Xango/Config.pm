@@ -1,4 +1,4 @@
-# $Id: Config.pm 43 2005-04-05 14:55:44Z daisuke $
+# $Id: Config.pm 62 2005-05-21 21:11:12Z daisuke $
 #
 # Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -9,6 +9,7 @@ use strict;
 # XXX - While YAML rocks (it really does), this may be one of
 # those modules that we need to shed to reduce memory footprint.
 # See if we need to strip out memory later
+# XXX - also, see if we can come up with a config loader of sorts.
 use YAML();
 
 my $instance;
@@ -23,8 +24,16 @@ sub import
 
 sub init
 {
-    my($class, $filename) = @_;
-    $instance ||= bless YAML::LoadFile($filename), $class;
+    my($class, $filename, $opts) = @_;
+    if (ref ($opts) ne 'HASH') {
+        $opts = {};
+    }
+
+    if ($opts->{force_reload}) {
+        $instance = bless YAML::LoadFile($filename), $class;
+    } else {
+        $instance ||= bless YAML::LoadFile($filename), $class;
+    }
     undef;
 }
 
@@ -69,24 +78,37 @@ as Perl data structures.
 
 =head1 METHODS
 
-=head2 init($filename)
+=head2 init($filename[, \%opts])
+
+=over 4
 
 Class method that initializes the config with the contents in the YAML file. 
-Once initialized, subsequent calls to init() has no effect.
+Once initialized, subsequent calls to init() has no effect unless 
+I<force_reload> is specified in the options hash:
+
+  Xango::Config->init($file, { force_reload => 1 });
+
+=back
 
 =head2 instance()
+
+=over 4
 
 Returns the current instance of Xango::Config. will return undef unless you
 have initialized the instance by calling init().
 
+=back
+
 =head2 param($name[, $value])
+
+=over 4
 
 Get/Set the value of a config variable. Returns whatever Perl structure that
 you have specified in the config file.
 
 Since Xango::Config is an You may use param() as both a class method or an instance method
 
-=head1 CONFIGURATION VARIABLES
+=back
 
 =head1 AUTHOR
 

@@ -15,19 +15,19 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 ebd673fd8099ad89b01fa2d53f0f90cba531bcf4 Build.PL
-SHA1 0c3f6bab7f3f0f1fc545ca8cc32fb50d4eeccd41 Changes
+SHA1 0f2f982afccb1cbb67fb4b44446d073ffc78b9d5 Changes
 SHA1 1656b00a810695e85fff32ec48e151de132d64d6 MANIFEST
-SHA1 f056e870bd71d6eae824a728fa7e9bc5fe67c5ac META.yml
-SHA1 f39a62a83e28c7a6988e7a050388459801b72bd4 bin/xango
-SHA1 65e9041c1cc9bd2aa821c1fa31c44cc64bb69331 lib/Xango.pm
-SHA1 bd4ae82fa6d6cead9d57503ea0174764ac38d07c lib/Xango/Broker.pm
-SHA1 9df3ca353634a0fd00ff905a9463e1a2d5c1b2ac lib/Xango/Config.pm
+SHA1 e8914ca24817f85bdc3db017ebddead7e97acaaa META.yml
+SHA1 b716f74f1b214b12b8337f8f4948d02e35c8ae2b bin/xango
+SHA1 6c8b56109900ac95cbffef90f8e72e45faf17d31 lib/Xango.pm
+SHA1 0b6033d693a2195230516112f001a9ba7a1b13e7 lib/Xango/Broker.pm
+SHA1 f7d7acc5b349ded652a200272e2dedd6ae2076f6 lib/Xango/Config.pm
 SHA1 fab5d85a59157df550285d3366a3f338253e3fc7 t/01-sanity.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.0.6 (GNU/Linux)
 Comment: For info see http://www.gnupg.org
 
-iD8DBQFCjYobpIZqybP6lHMRAmzKAKCMme1efA12soIUx78Bxg0zkJ+GJgCfWQvP
-W5KoGIcJ2vOylPDPVydAtvU=
-=kGvf
+iD8DBQFCj77JpIZqybP6lHMRApmHAKCk/xjiazLZmuKy5qg+q3X6tOi95QCgsc+l
+/K7FyTi//FH+Mge+UF0vN4k=
+=Tt1d
 -----END PGP SIGNATURE-----

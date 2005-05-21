@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: Xango
-version: 0.06
+version: 0.07
 author:
   - |-
     Copyright 2005 Daisuke Maki E<lt>dmaki@cpan.orgE<gt>. All rights reserved.
@@ -16,7 +16,7 @@ build_requires:
 provides:
   Xango:
     file: lib/Xango.pm
-    version: 0.06
+    version: 0.07
   Xango::Broker:
     file: lib/Xango/Broker.pm
   Xango::Config:

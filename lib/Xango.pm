@@ -1,4 +1,4 @@
-# $Id: Xango.pm 60 2005-05-20 06:41:18Z daisuke $
+# $Id: Xango.pm 62 2005-05-21 21:11:12Z daisuke $
 #
 # Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -13,7 +13,7 @@ use POSIX();
 
 BEGIN
 {
-    $VERSION = '0.06';
+    $VERSION = '0.07';
 
     # Define symbols. If users define them before Xango.pm is loaded,
     # then we respect their values.

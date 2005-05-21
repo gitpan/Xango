@@ -1,5 +1,5 @@
 #!perl
-# $Id: xango 44 2005-04-05 14:56:45Z daisuke $
+# $Id: xango 63 2005-05-21 22:49:49Z daisuke $
 #
 # Daisuke Maki <dmaki@cpan.org>
 # All rights reserved
@@ -49,7 +49,7 @@ sub main
     }
 
     $handler->spawn(map { split(/=/, $_) } @{$opts{args}});
-    Xango::Broker->spawn();
+    Xango::Broker->spawn(conf => $opts{conf});
     POE::Kernel->run();
 }
 
