@@ -1,4 +1,4 @@
-# $Id: Broker.pm 62 2005-05-21 21:11:12Z daisuke $
+# $Id: Broker.pm 68 2005-06-09 10:52:00Z daisuke $
 #
 # Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -46,6 +46,17 @@ sub spawn
     );
 }
 
+# Called from a signal handler
+sub reload_config
+{
+    my($kernel, $heap, $session) = @_[KERNEL, HEAP, SESSION];
+    if (!-f $heap->{CONFIG_FILE}) {
+        Xango::debug("[reload_config]: Variable CONFIG_FILE unset. Refusing to reload");
+        return;
+    }
+    $kernel->call($session, $heap->{CONFIG_FILE});
+}
+
 sub load_config
 {
     my($kernel, $heap, $config_file) = @_[KERNEL, HEAP, ARG0];
@@ -71,7 +82,14 @@ sub load_config
             Carp::croak("You must provide DnsCacheArgs");
         }
     }
-    my $cache            = $cache_class->new($cache_args);
+    my $cache_args_deref = Xango::Config->param('DnsCacheArgsDeref');
+    my $cache = $cache_args_deref ? 
+        $cache_class->new(
+            ref($cache_args) eq 'HASH'  ? %$cache_args :
+            ref($cache_args) eq 'ARRAY' ? @$cache_args :
+            die "DnsCacheArgs could not be dereferenced to an array or hash"
+        ) :
+        $cache_class->new($cache_args);
 
     my $job_retrieval_delay = int(Xango::Config->param('JobRetrievalDelay'));
     if ($job_retrieval_delay <= 0) {
@@ -158,10 +176,10 @@ sub _start
     # See 'got_sigpipe' entry elsewhere. very important that we handle
     # this state here.
     $kernel->sig(PIPE => 'got_sigpipe');
-    $kernel->sig(INT  => 'die_from_sig', 'INT');
-    $kernel->sig(QUIT => 'die_from_sig', 'QUIT');
-    $kernel->sig(TERM => 'die_from_sig', 'TERM');
-    $kernel->sig(HUP  => 'load_config',  $heap->{CONFIG_FILE});
+    $kernel->sig(INT  => 'die_from_sig');
+    $kernel->sig(QUIT => 'die_from_sig');
+    $kernel->sig(TERM => 'die_from_sig');
+    $kernel->sig(HUP  => 'reload_config');
 
     $heap->{DNS_COMP_CLASS}->spawn(
         Alias => $heap->{DNS_COMP_ALIAS},
@@ -674,6 +692,13 @@ Arguments to pass to the cache constructor. You must provide this if you
 are using anything other than Cache::FileCache as your cache class.
 
 =back
+
+=head2 DnsCacheArgsDeref (boolean)
+
+If specified to true, it will dereference the value specified for
+C<DnsCacheArgs> before passing it to the constructor. Use this if you
+want to use cache engine that requires non-reference parameter list to 
+the constructor
 
 =head2 MaxHttpAgents (integer)
 

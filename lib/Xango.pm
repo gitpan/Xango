@@ -1,4 +1,4 @@
-# $Id: Xango.pm 62 2005-05-21 21:11:12Z daisuke $
+# $Id: Xango.pm 67 2005-06-09 10:30:55Z daisuke $
 #
 # Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -13,7 +13,7 @@ use POSIX();
 
 BEGIN
 {
-    $VERSION = '0.07';
+    $VERSION = '0.08';
 
     # Define symbols. If users define them before Xango.pm is loaded,
     # then we respect their values.
@@ -31,10 +31,12 @@ BEGIN
         $LOGDISPATCH = Log::Dispatch->new(callbacks => \&_format4logdispatch);
         if (&DEBUG) {
             my $io     = IO::Handle->new();
+            my $dup    = $io->fdopen(fileno(STDERR), "w");
+            $dup->autoflush(1);
             my $handle = Log::Dispatch::Handle->new(
                 name      => 'xgDEBUG',
                 min_level => 'debug',
-                handle    => $io->fdopen(fileno(STDERR), "w")
+                handle    => $dup,
             );
             $LOGDISPATCH->add($handle);
         }

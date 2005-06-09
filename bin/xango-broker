@@ -1,0 +1,60 @@
+#!perl
+# $Id: xango-broker 35 2005-03-16 05:16:52Z daisuke $
+#
+# Daisuke Maki <dmaki@cpan.org>
+# All rights reserved
+
+use strict;
+use Getopt::Long;
+# BEGIN { sub POE::Kernel::TRACE_DEFAULT { 1 } }
+
+my @ArgSepc = (
+    "debug|d!",
+    "handler|h=s",
+    "conf|c=s",
+);
+
+sub main
+{
+    my %opts;
+    if (!GetOptions(\%opts, @ArgSepc)) {
+        exit 1;
+    }
+
+    if ($opts{debug}) {
+        eval "sub Xango::DEBUG { 1 }";
+        die if $@;
+    }
+
+    if (! $opts{conf} ) {
+        require File::Spec;
+        my $dir = (getpwuid($>))[7];
+        $opts{conf} = File::Spec->catfile($dir, '.xangorc');
+    }
+
+    my $handler = $opts{handler} ||
+        die "-h(--handler) argument is required";
+
+    require Xango;
+    require Xango::Broker;
+    require Xango::Config;
+
+    Xango::Config->init($opts{conf});
+
+    eval "require $handler";
+    die if $@;
+
+    if (!UNIVERSAL::can($handler, 'spawn')) {
+        die "$handler does not implement a 'spawn' method";
+    }
+ 
+    $handler->spawn();
+    Xango::Broker->spawn();
+    eval {
+        POE::Kernel->run();
+    };
+
+    warn "normal? exit. \$@ is $@";
+}
+
+main();

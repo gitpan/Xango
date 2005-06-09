@@ -3,6 +3,13 @@ Changes
 
 Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
 
+0.08 - 09 Jun 2005
+ - Fix POE::Kernel->sig() usage.
+ - Autoflush debug handle
+ - Add DnsCacheArgsDeref config parameter, in case you need to pass
+   non-reference parameter list to the cache constructor. I needed this
+   to use Cache::FastMmap as the cache engine
+
 0.07 - 22 May 2005
  - Doc tweaks.
  - Properly use DnsComponentClass

@@ -34,7 +34,6 @@ my $build = $class->new(
     module_name   => 'Xango',
     module_author => 'Daisuke Maki <dmaki@cpan.org>',
     license       => 'perl',
-    sign          => 1,
     requires      => \%requires,
     build_requires     => {
         'Test::More' => 0,
