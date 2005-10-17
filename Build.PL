@@ -1,28 +1,41 @@
 #!perl
-# $Id: Build.PL 60 2005-05-20 06:41:18Z daisuke $
+# $Id: Build.PL 79 2005-10-13 03:54:54Z daisuke $
 #
-# Daisuke Maki <dmaki@cpan.org>
+# Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
 
 use strict;
 use Module::Build;
 
 my %requires = (
-    'Log::Dispatch'                    => 0,
-    'POE'                              => 0,
-    'YAML'                             => 0, # See Xango::Config
+    'Log::Dispatch' => 0,
+    'POE'           => 0,
+    'YAML'          => 0, # See Xango::Config
 );
 
-my @optional = qw(POE::Component::Client::DNS POE::Component::Client::HTTP);
+my @ask;
+my @optional = (
+    qw(POE::Component::Client::DNS POE::Component::Client::HTTP),
+    qw(Cache::FileCache)
+);
 foreach my $module(@optional) {
     my $r = Module::Build->check_installed_status($module, 0);
-    if (! $r->{ok}) {
-        my $require_mod = Module::Build->y_n(<<EOM, 'y');
-***********************
-$module not installed. This module does not require $module if you plan to implement your own module to handle the task.
+    next if $r->{ok};
 
-Would you like to install the module $module ?
+    print "* $module not installed\n";
+    push @ask, $module;
+}
+
+if (@ask) {
+    print <<EOM;
+
+Xango by default uses the following missing modules. If you know what you
+are doing (and/or plan to customize the modules that are going to be used),
+then you do not need to install them.
+
 EOM
+    foreach my $module (@ask) {
+        my $require_mod = Module::Build->y_n("Install $module?", 'y');
         if ($require_mod) {
             $requires{$module} = 0;
         }
@@ -39,6 +52,7 @@ my $build = $class->new(
         'Test::More' => 0,
     },
     create_makefile_pl => 'traditional',
+    create_readme      => 1,
 );
 
 $build->create_build_script();

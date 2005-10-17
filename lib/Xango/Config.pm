@@ -1,6 +1,6 @@
-# $Id: Config.pm 62 2005-05-21 21:11:12Z daisuke $
+# $Id: Config.pm 77 2005-10-11 14:53:00Z daisuke $
 #
-# Daisuke Maki <dmaki@cpan.org>
+# Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
 
 package Xango::Config;
@@ -112,7 +112,7 @@ Since Xango::Config is an You may use param() as both a class method or an insta
 
 =head1 AUTHOR
 
-Daisuke Maki E<lt>dmaki@cpan.orgE<gt>
+Copyright (c) 2005 Daisuke Maki E<lt>dmaki@cpan.orgE<gt>
 Development funded by Brazil, Ltd. E<lt>http://b.razil.jpE<gt>
 
 =cut

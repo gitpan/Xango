@@ -1,11 +1,26 @@
-bin/xango
-bin/xango-broker
 Build.PL
 Changes
 lib/Xango.pm
 lib/Xango/Broker.pm
+lib/Xango/Broker/Base.pm
+lib/Xango/Broker/Pull.pm
+lib/Xango/Broker/Push.pm
 lib/Xango/Config.pm
-MANIFEST			This list of files
-t/01-sanity.t
-META.yml
+lib/Xango/Job.pm
+lib/Xango/Manual/Intro.pod
 Makefile.PL
+MANIFEST			This list of files
+META.yml
+README
+t/01-sanity.t
+t/02-pull.t
+t/03-push.t
+t/99-pod-coverage.t
+t/99-pod.t
+t/lib/XangoTest/BaseHandler.pm
+t/lib/XangoTest/SimplePull.pm
+t/lib/XangoTest/SimplePull/Broker.pm
+t/lib/XangoTest/SimplePull/Handler.pm
+t/lib/XangoTest/SimplePush.pm
+t/lib/XangoTest/SimplePush/Broker.pm
+t/lib/XangoTest/SimplePush/Handler.pm

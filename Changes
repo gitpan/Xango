@@ -3,6 +3,26 @@ Changes
 
 Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
 
+0.99_01 - 17 Oct 2005
+ *** Backwards Incompatible Changes ***
+ - Change structure drastically: Xango::Broker is now separated into
+   Xango::Broker::Pull, Xango::Broker::Push.
+ - States have changed -- beware!
+
+ *** House Cleaning ***
+ - 0.99 no longer resides on the same svn repository as 0.0x.
+
+ - Handler component's alias no longer needs to be 'handler'. You may specify
+   arbitrary names in the Xango::Broker constructor.
+ - Broker components' alias no longer needs to be 'broker'. Same as above.
+ - Add Xango::Manual::Intro
+ - apply_policy is now called synchronously, not thought POE's FIFO
+ - Allow toggling DEBUG switch from $ENV via $ENV{XANGO_DEBUG}
+ - Add tests for push and pull crawlers
+
+0.09 - 
+ - Add a 'shutdown' state.
+
 0.08 - 09 Jun 2005
  - Fix POE::Kernel->sig() usage.
  - Autoflush debug handle

@@ -1,0 +1,92 @@
+NAME
+    Xango - Event Based High Performance Web Crawler Framework
+
+SYNOPSIS
+      use Xango;
+
+DESCRIPTION
+      ******************  WARNING! WARNING! WARNING! ****************
+      * This new release is NOT compatible with the old Xango 0.0x! *
+      * Beware and use at your own risk.                            *
+      ***************************************************************
+
+    Xango is a framework for writing web crawlers. As such, it doesn't do a
+    whole lot by itself - you need to create custom handlers to do the grunt
+    work. See the documentation for Xango::Manual::Intro for more details on
+    how to write your own crawler.
+
+    Please note that Xango is still in beta. Some behavior may change as we
+    keep on developing it.
+
+COMPONENTS
+    The main component that comes with Xango is the Broker component. The
+    Broker handles the basic flow of a web crawler - it accepts data to
+    fetch, applies some policies to it, fetches it, and then sends it for
+    final processing.
+
+    The only concrete implementation provided by the Broker of the above
+    flow is the part where the requested URI is fetched. You must provide
+    the rest of the logic. See Xango::Broker for details
+
+    The Handler is the component in which the Broker delegates the above
+    processing to.
+
+CONSTANTS
+    There are a few constants that may change the behavior of Xango. You can
+    either set these by pre-declaring the constant subroutine of the same
+    name or you can set them by populating the corresponding environment
+    variable, which is prefixed with 'XANGO_'
+
+    For example,
+
+      BEGIN { sub Xango::DEBUG { 1 } }
+      use Xango;
+
+    or
+
+      $ENV{XANGO_DEBUG} = 1;
+      use Xango;
+
+    will both toggle the DEBUG switch.
+
+    See blow for the list of possible flags and switches.
+
+  DEBUG
+    Set this to 1 if you want to enable debugging messages.
+
+FUNCTIONS
+  debug
+  info
+    These are simple interface to the underlying logging mechanism
+
+DEBUGGING
+    To turn debugging on, you need to pre-declare some constants (which, in
+    Perl, are subroutines). For example, to turn debugging on, you need to
+    say something like this:
+
+      sub Xango::DEBUG { 1 }
+      use Xango;
+
+    Xango will recognize that the DEBUG flag is already set, and turn
+    debugging on.
+
+BUGS
+    Plenty, I'm sure. Please report bugs to RT
+    http://rt.cpan.org/NoAuth/Bugs.html?Dist=Xango
+
+TODO
+    Documentation.
+        Documentation for this distribution is half-baked at best. It needs
+        a lot of work, including a tutorial.
+
+CAVEATS
+    This is an alpha version release. Expect a lot of things to be still
+    either in broken or experimental stage.
+
+SEE ALSO
+    POE Xango::Manual::Intro Xango::Broker::Pull Xango::Broker::Push
+
+AUTHOR
+    Copyright 2005 Daisuke Maki <dmaki@cpan.org>. All rights reserved.
+    Development funded by Brazil, Ltd. <http://b.razil.jp>
+
