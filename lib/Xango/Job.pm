@@ -1,4 +1,4 @@
-# $Id: Job.pm 88 2005-10-17 09:05:04Z daisuke $
+# $Id: Job.pm 93 2005-10-17 18:07:52Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -83,6 +83,12 @@ Newer modules should be using the notes() function to store arbitrary data.
 =head2 new(uri =E<gt> $uri, [key =E<gt> $value, key =E<gt> $value, ...])
 
 Create a new Xango::Job object.
+
+=head2 id
+
+=head2 uri
+
+=head2 notes($key[, $value])
 
 =head1 AUTHOR
 

@@ -10,6 +10,7 @@ WriteMakefile
                            'Test::More' => 0,
                            'YAML' => 0,
                            'Log::Dispatch' => 0,
+                           'HTTP::Request' => 0,
                            'POE' => 0
                          }
         )

@@ -3,6 +3,12 @@ Changes
 
 Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
 
+0.99_02 - 18 Oct 2005
+ - Oops, Xango::Tutorial should have been Xango::Manual::Intro
+ - Document Xango::Broker::Base constructor arguments
+ - Fix initialization. First load from config file, then use arguments.
+ - Silence Pod::Test::Coverage (but not quite done yet)
+
 0.99_01 - 17 Oct 2005
  *** Backwards Incompatible Changes ***
  - Change structure drastically: Xango::Broker is now separated into

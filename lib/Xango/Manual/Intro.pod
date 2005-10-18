@@ -1,6 +1,6 @@
 =head1 NAME
 
-Xango::Tutorial - Learn How To Write Crawlers With Xango
+Xango::Manual::Intro - Learn How To Write Crawlers With Xango
 
 =head1 DECIDE ON BROKER TYPE
 
@@ -30,7 +30,32 @@ states:
 
 =over 4
 
+=item apply_policy
+
 =item retrieve_jobs
+
+The retrieve_jobs state is called periodically to fetch new jobs to be
+processed. This is probably where you would be accessing a database or such.
+
+In this state, just return a list of jobs:
+
+  package MyHandler;
+  sub retrieve_jobs
+  {
+    # of course, you probably wouldn't be connecting to a database every
+    # time retrieve_jobs is called in reality (too much overhead)
+    my $dbh = DBI->connect(...);
+
+    my @jobs;
+    my $sth = $dbh->prepare("SELECT ....");
+    while ($sth->fetchrow_arrayref) {
+      my $job = Xango::Job->new(uri => $uri, ...);
+      push @jobs, $job;
+    }
+    return @jobs;
+  }
+
+=item handle_response
 
 =back 
 
@@ -43,6 +68,14 @@ states:
 
   # In your code elsewhere...
   POE::Kernel->post('broker', 'enqueue_job', $job);
+
+=over 4
+
+=item apply_policy
+
+=item handle_response
+
+=back
 
 =head1 PERFORMANCE
 
@@ -62,6 +95,6 @@ For casual users, though, this may not be a problem.
 
 =head1 AUTHOR
 
-Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
+Copyright (c) 2005 Daisuke Maki E<lt>dmaki@cpan.org<E<gt>
 
 =cut

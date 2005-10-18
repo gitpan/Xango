@@ -1,4 +1,4 @@
-# $Id: Base.pm 89 2005-10-17 13:25:54Z daisuke $
+# $Id: Base.pm 93 2005-10-17 18:07:52Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -26,24 +26,7 @@ sub new
 {
     my $class = shift;
 
-    my $self  = bless {
-        ALIAS           => 'broker',
-        CONFIG_FILE     => undef,
-        DNS_CACHE_CLASS => DEFAULT_DNS_CACHE_CLASS,
-        DNS_CACHE_ARGS  => DEFAULT_DNS_CACHE_ARGS,
-        DNS_COMP_ALIAS  => 'dns_resolver',
-        DNS_COMP_CLASS  => DEFAULT_DNS_COMP_CLASS,
-        DNS_PENDING     => {},
-        FETCHERS        => {},
-        HANDLER_ALIAS   => 'handler',
-        HTTP_COMP_CLASS => DEFAULT_HTTP_COMP_CLASS,
-        HTTP_COMP_ARGS  => [],
-        JOBS_PENDING    => [],
-        MAX_HTTP_COMP   => 10, # XXX - Rename later
-        SHUTDOWN        => 0,
-        STRICT_JOB_TYPE   => 'Xango::Job',
-        UNDEF_ON_FINALIZE => 0
-    }, $class;
+    my $self  = bless {}, $class;
     $self->initialize(@_);
     return $self;
 }
@@ -53,12 +36,63 @@ sub initialize
     my $self = shift;
     my %args = @_;
 
+    if ($args{ConfigFile}) {
+        my $config = Xango::Config->init($args{ConfigFile});
+        $self->_load_config($config);
+    }
+
+    # Set values that must be set
+    $self->{ALIAS}             ||= 'broker';
+    $self->{CONFIG_FILE}       ||= undef;
+    $self->{DNS_CACHE_CLASS}   ||= DEFAULT_DNS_CACHE_CLASS;
+    $self->{DNS_CACHE_ARGS}    ||= DEFAULT_DNS_CACHE_ARGS;
+    if (!exists $self->{DNS_CACHE_ARGS_DEREF}) {
+        $self->{DNS_CACHE_ARGS_DEREF} = 0;
+    }
+    $self->{DNS_COMP_ALIAS}    ||= 'dns_resolver';
+    $self->{DNS_COMP_CLASS}    ||= DEFAULT_DNS_COMP_CLASS;
+    $self->{DNS_PENDING}         = {}; # Non-configurable
+    $self->{FETCHERS}            = {}; # Non-configurable
+    $self->{HANDLER_ALIAS}     ||= 'handler';
+    $self->{HTTP_COMP_CLASS}   ||= DEFAULT_HTTP_COMP_CLASS;
+    $self->{HTTP_COMP_ARGS}    ||= [];
+    $self->{JOBS_PENDING}        = []; # Non-configurable
+    $self->{MAX_HTTP_COMP}     ||= 10;
+    $self->{SHUTDOWN}            = 0;  # Non-configurable
+    $self->{STRICT_JOB_TYPE}   ||= 'Xango::Job';
+    $self->{UNDEF_ON_FINALIZE} ||= 0;
+
     my $k_munge;
     foreach my $k (keys %args) {
         $k_munge = $k;
         $k_munge =~ s/([a-z])([A-Z])/$1_$2/g;
         $self->{uc ($k_munge)} = $args{$k};
     }
+}
+
+sub _load_config
+{
+    my($self, $config) = @_;
+
+    $self->{ALIAS} = $config->param('BrokerAlias');
+
+    my $set = sub {
+        my $p = shift;
+        my $c = $p;
+
+        $c =~ s/([a-z])([A-Z])/$1_$2/g;
+        $c = uc $c;
+        $self->{$c} = $config->param($p);
+    };
+    $set->('DnsCacheClass');
+    $set->('DnsCacheArgs');
+    $set->('DnsCacheArgsDeref');
+    $set->('DnsCompAlias');
+    $set->('DnsCompClass');
+    $set->('HandlerAlias');
+    $set->('HttpCompArgs');
+    $set->('HttpCompClass');
+    $set->('MaxHttpComp');
 }
 
 sub states
@@ -80,7 +114,6 @@ sub states
                 'handle_dns_response',
                 'handle_http_response',
                 'install_sighandlers',
-                'load_config',
                 'register_http_request',
                 'register_dns_request',
                 'signal_http_comp',
@@ -134,9 +167,6 @@ sub _start
 
     $kernel->alias_set($obj->alias);
 
-    # Load config file first
-    $kernel->call($session, 'load_config', $obj->config_file);
-
     # Install signal handlers
     $kernel->call($session, 'install_sighandlers');
 
@@ -160,8 +190,6 @@ sub _stop
 
     $kernel->alias_remove($obj->alias);
 }
-
-sub load_config {}
 
 sub spawn_dns_comp
 {
@@ -237,11 +265,18 @@ sub create_dns_cache
 
     my $class = $obj->dns_cache_class;
     my $args  = $obj->dns_cache_args;
+    my $deref = $obj->dns_cache_args_deref;
 
     eval "require $class";
     die if $@;
 
-    return $class->new($args);
+    return $deref ?
+        $class->new(
+            ref($args) eq 'HASH'  ? %$args :
+            ref($args) eq 'ARRAY' ? @$args :
+            die "DnsCacheArgs could not be dereferenced to an array or hash"
+        ) :
+        $class->new($args);
 }
 
 sub create_http_request
@@ -582,31 +617,101 @@ applications. See respective documentations.
 
 =head1 OBJECT METHODS
 
-=head2 new
+=head2 spawn(%args)
+
+Create a new Xango::Broker::Base object, and also spawn a new POE::Session
+using that new object. To start a Xango::Broker session, you should be using
+spawn(), and not new().
+
+Accepts the same arguments as new().
+
+=head2 new(%args)
 
 Create a new Xango::Broker::Base object. Arguments passed to it are
 stored via initialize()
+
+=over 4
+
+=item Alias (scalar)
+
+The POE session alias for the broker.
+
+=item ConfigFile (scalar)
+
+Path to the config file used by Xango::Config. Values in this file will be 
+used as the default value for other variables. 
+
+=item DnsCacheClass (scalar)
+
+Perl class to use for DNS cache.
+
+=item DnsCacheArgs (hashref | arrayref)
+
+Arguments to the DNS cache constructor
+
+=item DnsCacheArgsDeref (boolean)
+
+Try to de-reference the DNS cache constructor argument specified by
+DnsCacheArgs when creating the cache. This is required if your DNS cache class
+uses simple list values instead of hash/array refs (e.g. Cache::Cache and
+Cache::FastMmap)
+
+=item DnsCompClass (scalar)
+
+Specify the POE component class to asynchronously resolve DNS requests.
+By default POE::Component::Client::DNS is used.
+
+=item HandlerAlias (scalar)
+
+The POE session alias for the handler.
+
+=item HttpCompClass (scalar)
+
+Specify the POE component class to handle the actual HTTP fetching.
+By default POE::Component::Client::HTTP is used.
+
+=item HttpCompArgs (hashref | arrayref)
+
+Arguments to the HTTP fetching component constructor.
+
+=item MaxHttpComp (scalar)
+
+Max number of HTTP components to spawn.
+
+=back
+
+=head2 initialize
+
+Initializes the broker object.
 
 =head2 attr(key =E<gt> $value)
 
 General purpose getter/stter for attributes.
 
-=head2 dns_comp_class()
+=head2 dns_comp_class
 
 The class name for DNS resolver component.
 
-=head2 dns_comp_alias()
+=head2 dns_comp_alias
 
 The alias for DNS resolver component.
+
+=head2 states
+
+Returns the states list as passed to the POE::Session constructor.
 
 =head1 STATES
 
 States are all called either by yield() or post(). The arguments described
 below are to be used in that context, i.e. yield('state', $arg1, $arg2...)
 
+=head2 check_job_type
+
 =head2 create_dns_cache
 
 Creates and sets the DNS cache. You probably don't need to worry about this.
+
+=head2 create_http_comp_data
 
 =head2 create_http_request
 
@@ -616,10 +721,15 @@ Creates a new HTTP::Request object to be fetched.
 
 Start an HTTP fetch for $job. $job must have a HTTP fetcher associated to it.
 
-=head2 dispatch_to_lighest_load($job)
+=head2 dispatch_to_lightest_load($job)
 
 Choose the HTTP fetcher session with the least load, and call 
 dispath_http_fetch after associating it to a job
+
+=head2 fake_error_response
+
+Create a fake HTTP error response, which is passed to handle_http_response.
+This is used to notify internal errors to the handler.
 
 =head2 install_sighandlers
 
@@ -631,9 +741,23 @@ Spawns the component to resolve DNS lookups.
 
 =head2 spawn_http_comp($howmany)
 
+=head2 signal_http_comp
+
+Send a signal to the specified HTTP component.
+
 =head2 handle_dns_response
 
 =head2 handle_http_response
+
+=head2 handle_signal
+
+Handle a given signal. The signal name is in ARG0.
+
+=head2 register_dns_request
+
+=head2 register_http_request
+
+=head2 unregister_http_request
 
 =head2 finalize_job
 

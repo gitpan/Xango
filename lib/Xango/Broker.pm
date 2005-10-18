@@ -1,4 +1,4 @@
-# $Id: Broker.pm 87 2005-10-17 08:52:38Z daisuke $
+# $Id: Broker.pm 92 2005-10-17 17:25:36Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -19,7 +19,7 @@ __END__
 
 =head1 NAME
 
-Xango::Broker - Broker HTTP Requests
+Xango::Broker - Broker HTTP Requests (Deprecated)
 
 =head1 SYNOPSIS
 

@@ -1,4 +1,4 @@
-# $Id: Pull.pm 89 2005-10-17 13:25:54Z daisuke $
+# $Id: Pull.pm 93 2005-10-17 18:07:52Z daisuke $
 #
 # Copyright (c) 2005 Daisule Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -194,6 +194,10 @@ Entry point.
 =head2 pull_jobs
 
 Interface to ask the handler to pull new jobs to be processed
+
+=head2 get_http_comp_state
+
+=head2 get_ready_fetchers
 
 =head1 SEE ALSO
 

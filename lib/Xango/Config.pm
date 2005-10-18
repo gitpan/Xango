@@ -1,4 +1,4 @@
-# $Id: Config.pm 77 2005-10-11 14:53:00Z daisuke $
+# $Id: Config.pm 92 2005-10-17 17:25:36Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -34,7 +34,7 @@ sub init
     } else {
         $instance ||= bless YAML::LoadFile($filename), $class;
     }
-    undef;
+    $instance;
 }
 
 sub instance { return $instance }

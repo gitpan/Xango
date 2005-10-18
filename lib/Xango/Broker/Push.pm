@@ -1,4 +1,4 @@
-# $Id: Push.pm 87 2005-10-17 08:52:38Z daisuke $
+# $Id: Push.pm 93 2005-10-17 18:07:52Z daisuke $
 #
 # Copyright (c) 2005 Daisule Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -71,26 +71,6 @@ sub flush_queue
     @$q = ();
 }
 
-sub dispatch_job
-{
-    my($kernel, $heap, $job) = @_[KERNEL, HEAP, ARG0];
-
-    # In this scenario, assume that the job has already been checked for
-    # validity (it is the caller sessions' responsibility to make sure that
-    # the job is a-ok). So the only thing that dispatch_job will do is to
-    # push the job in the to incoming queue.
-
-}
-
-# This state should only be called if 
-sub check_queue
-{
-    my($kernel, $heap) = @_[KERNEL, HEAP];
-
-    # Check if the queue contains more jobs to process. If 
-    
-}
-
 1;
 __END__
 
@@ -122,6 +102,16 @@ This is the preferred model if:
   (b) You have long intervals between when jobs are available
   (c) You have external entities that can work in a separate process to generate
 the list of jobs to be processed
+
+=head1 STATES
+
+=head2 enqueue_job($job)
+
+Enqueues a job to be processed.
+
+=head2 flush_queue
+
+Flushes the job queue.
 
 =head1 SEE ALSO
 
