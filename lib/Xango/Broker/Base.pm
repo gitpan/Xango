@@ -1,4 +1,4 @@
-# $Id: Base.pm 93 2005-10-17 18:07:52Z daisuke $
+# $Id: Base.pm 97 2005-11-15 15:22:35Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -7,7 +7,6 @@ package Xango::Broker::Base;
 use strict;
 use HTTP::Request;
 use POE;
-use POSIX qw(ESRCH);
 use Xango;
 use Xango::Config;
 use Xango::Job;
@@ -516,13 +515,6 @@ sub finalize_job
     my $fetcher_id = $job->notes('fetcher');
     $kernel->call($obj->handler_alias, 'finalize_job', $job);
     $kernel->call($session, 'unregister_http_request', $fetcher_id, $job);
-=head1
-    my $fid = $job->{fetcher};
-    my $fdata = $heap->{FETCHERS}->{$fid};
-    delete $fdata->{jobs}->{$job->{id}};
-    delete $fdata->{dispatched}->{$job->{id}};
-    $heap->{FETCHER_STATUS}[$fid]--;
-=cut
     if ($obj->undef_on_finalize) {
         undef $job;
     }
@@ -674,9 +666,18 @@ By default POE::Component::Client::HTTP is used.
 
 Arguments to the HTTP fetching component constructor.
 
-=item MaxHttpComp (scalar)
+=item MaxHttpComp (integer)
 
-Max number of HTTP components to spawn.
+The number of concurrent http agents (i.e. the number of
+POE::Component::Client::HTTP sessions) that are allowed. The default is 10,
+but for anything other than a toy application, something in the order of
+50 ~ 100 is the recommended value.
+
+Unless this number is less than 10, the broker starts with 10 sessions,
+and successively grows the pool of agents when there are not enough
+agents to handle the currently available jobs, until the maximum is reached.
+
+If the max is less than 10, the starting number if equal to the max.
 
 =back
 

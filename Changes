@@ -3,6 +3,12 @@ Changes
 
 Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
 
+1.00 - 12 Dec 2005
+ - Xango::Job can accept simple scalars, not just URI objects
+   (nudged by Tasuku Suenaga over some prime ribs)
+ - Only run POD tests when disttest is specified
+ - Cleanup
+
 0.99_02 - 18 Oct 2005
  - Oops, Xango::Tutorial should have been Xango::Manual::Intro
  - Document Xango::Broker::Base constructor arguments

@@ -1,4 +1,4 @@
-# $Id: Pull.pm 93 2005-10-17 18:07:52Z daisuke $
+# $Id: Pull.pm 96 2005-10-25 02:47:06Z daisuke $
 #
 # Copyright (c) 2005 Daisule Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -179,7 +179,29 @@ Xango::Broker::Pull - Xango's Pull-Crawler
 Xango::Broker::Pull implements the pull-model crawler for Xango, where
 jobs that need to be fetched are pulled from a source periodically.
 
-=head1 OBJECT ATTRIBUTES
+=head1 METHODS
+
+=head2 new
+
+new() accepts the following parameters, which can also be written in an
+config file used by L<Xango::Config|Xango::Config>. If you use a config file,
+then the values in the config file will be treated as the default, and
+the parameters passed to new() can override them.
+
+=over 4
+
+=item JobRetrievalDelay (integer)
+
+The number of seconds to wait between calls to 'retrieve_job' state of the
+handler session. The default is 15 seconds.
+
+=item MaxSilenceInterval (integer)
+
+The number of seconds that we allow an agent to be inactive for. Once a fetcher
+session is inactive for this much amount of time, the sessions is stopped
+via detach_child(). The default is 300 seconds.
+
+=back
 
 =head2 states
 

@@ -1,5 +1,5 @@
 #!perl
-# $Id: Build.PL 93 2005-10-17 18:07:52Z daisuke $
+# $Id: Build.PL 97 2005-11-15 15:22:35Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -43,13 +43,31 @@ EOM
     }
 }
 
-my $class = 'Module::Build';
+my $class = Module::Build->subclass(code => <<'EOSUB');
+    sub ACTION_disttest
+    {
+        my $self = shift;
+        local $ENV{PERL_TESTPOD} = 1;
+        $self->SUPER::ACTION_disttest(@_);
+    }
+
+    sub find_test_files
+    {
+        my $self  = shift;
+        my $tests = $self->SUPER::find_test_files(@_);
+
+        return $tests if $ENV{PERL_TESTPOD};
+        return [ grep { $_ !~ /\bpod.*\.t\z/ } @$tests ];
+    }
+EOSUB
+
 my $build = $class->new(
-    module_name   => 'Xango',
-    module_author => 'Daisuke Maki <dmaki@cpan.org>',
-    license       => 'perl',
-    requires      => \%requires,
-    build_requires     => {
+    dist_name         => 'Xango',
+    dist_version_from => 'lib/Xango.pm',
+    module_author     => 'Daisuke Maki <dmaki@cpan.org>',
+    license           => 'perl',
+    requires          => \%requires,
+    build_requires    => {
         'Test::More' => 0,
     },
     create_makefile_pl => 'traditional',

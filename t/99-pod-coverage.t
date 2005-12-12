@@ -1,8 +1,15 @@
+#!perl
 use Test::More;
-eval "use Test::Pod";
-eval "use Test::Pod::Coverage";
-plan(skip_all => "Test::Pod::Coverage required for testing POD") if $@;
-plan(tests    => 6);
+BEGIN {
+    eval "use Test::Pod";
+    eval "use Test::Pod::Coverage";
+    if ($@) {
+        plan(skip_all => "Test::Pod::Coverage required for testing POD");
+        eval "sub pod_coverage_ok {}";
+    } else {
+        plan(tests    => 6);
+    }
+}
 
 pod_coverage_ok('Xango');
 pod_coverage_ok('Xango::Broker::Base');

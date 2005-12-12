@@ -1,10 +1,11 @@
-# $Id: Job.pm 93 2005-10-17 18:07:52Z daisuke $
+# $Id: Job.pm 97 2005-11-15 15:22:35Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
 
 package Xango::Job;
 use strict;
+use URI;
 
 sub new
 {
@@ -16,6 +17,7 @@ sub new
     $self->id(delete $args{id});
     $self->uri(delete $args{uri});
     while (my($k, $v) = each %args) {
+        $v = URI->new($v) if ($k eq 'uri');
         $self->notes($k, $v);
     }
 
