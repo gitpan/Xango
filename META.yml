@@ -1,6 +1,6 @@
 ---
 name: Xango
-version: 1.00
+version: 1.01
 author:
   - |-
     Copyright 2005 Daisuke Maki E<lt>dmaki@cpan.orgE<gt>. All rights reserved.
@@ -17,7 +17,7 @@ build_requires:
 provides:
   Xango:
     file: lib/Xango.pm
-    version: 1.00
+    version: 1.01
   Xango::Broker:
     file: lib/Xango/Broker.pm
   Xango::Broker::Base:

@@ -1,4 +1,4 @@
-# $Id: Base.pm 97 2005-11-15 15:22:35Z daisuke $
+# $Id: Base.pm 98 2006-01-25 17:47:55Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -474,7 +474,7 @@ EOHTML
     my $request = HTTP::Request->new(GET => $job->uri);
     $request->content('DUMMY-REQUEST');
     $response->request($request);
-    $kernel->yield('handle_dns_response', [ $request, $job ], [ $response ]);
+    $kernel->yield('handle_http_response', [ $request, $job ], [ $response ]);
 }
 
 sub DESTROY {}

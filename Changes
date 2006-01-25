@@ -3,6 +3,9 @@ Changes
 
 Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
 
+1.01 - 26 Jan 2006 ("Bang My Head Against The Wall" Release)
+ - Fix the next state that fake_error_response posts to.
+
 1.00 - 12 Dec 2005
  - Xango::Job can accept simple scalars, not just URI objects
    (nudged by Tasuku Suenaga over some prime ribs)
