@@ -1,9 +1,15 @@
 #!perl
 use strict;
-use Test::More (tests => 3);
-
+use Test::More;
 use lib("t/lib");
 use XangoTest::SimplePull;
+use XangoTest::Util qw(check_prereqs);
+
+eval { check_prereqs() };
+if ($@) {
+    plan skip_all => $@;
+}
+plan(tests => 3);
 
 my @jobs = (Xango::Job->new(uri => URI->new('http://www.cpan.org')));
 my $handler = XangoTest::SimplePull::Handler->spawn(jobs => [@jobs]);

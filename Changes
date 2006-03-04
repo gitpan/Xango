@@ -3,6 +3,9 @@ Changes
 
 Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
 
+1.02 - 04 Feb 2006 
+ - properly call 'prep_request' on the handler, not the broker session
+
 1.01 - 26 Jan 2006 ("Bang My Head Against The Wall" Release)
  - Fix the next state that fake_error_response posts to.
 

@@ -1,5 +1,5 @@
 #!perl
-# $Id: Build.PL 97 2005-11-15 15:22:35Z daisuke $
+# $Id: Build.PL 99 2006-03-04 01:30:59Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -8,10 +8,11 @@ use strict;
 use Module::Build;
 
 my %requires = (
-    'HTTP::Request' => 0,
-    'Log::Dispatch' => 0,
-    'POE'           => 0,
-    'YAML'          => 0, # See Xango::Config
+    'HTTP::Request'  => 0,
+    'HTTP::Response' => 0,
+    'Log::Dispatch'  => 0,
+    'POE'            => 0,
+    'YAML'           => 0, # See Xango::Config
 );
 
 my @ask;

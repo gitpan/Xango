@@ -1,9 +1,16 @@
 #!perl
 use strict;
-use Test::More (tests => 3);
+use Test::More;
 
 use lib("t/lib");
 use XangoTest::SimplePush;
+use XangoTest::Util qw(check_prereqs);
+
+eval { check_prereqs() };
+if ($@) {
+    plan skip_all => $@;
+}
+plan tests => 3;
 
 my $handler = XangoTest::SimplePush::Handler->spawn();
 my $broker  = XangoTest::SimplePush::Broker->spawn();

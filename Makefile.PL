@@ -2,16 +2,17 @@
 use ExtUtils::MakeMaker;
 WriteMakefile
 (
+          'PL_FILES' => {},
+          'INSTALLDIRS' => 'site',
           'DISTNAME' => 'Xango',
           'VERSION_FROM' => 'lib/Xango.pm',
           'PREREQ_PM' => {
-                           'HTTP::Request' => '0',
-                           'Log::Dispatch' => '0',
-                           'POE' => '0',
-                           'Test::More' => '0',
-                           'YAML' => '0'
-                         },
-          'INSTALLDIRS' => 'site',
-          'PL_FILES' => {}
+                           'Test::More' => 0,
+                           'YAML' => 0,
+                           'HTTP::Response' => 0,
+                           'Log::Dispatch' => 0,
+                           'HTTP::Request' => 0,
+                           'POE' => 0
+                         }
         )
 ;

@@ -1,4 +1,4 @@
-# $Id: Xango.pm 98 2006-01-25 17:47:55Z daisuke $
+# $Id: Xango.pm 99 2006-03-04 01:30:59Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -13,7 +13,7 @@ use POSIX();
 
 BEGIN
 {
-    $VERSION = '1.01';
+    $VERSION = '1.02';
 
     my $default_from_env = sub {
         my($var, $default) = @_;

@@ -1,4 +1,4 @@
-# $Id: Base.pm 98 2006-01-25 17:47:55Z daisuke $
+# $Id: Base.pm 99 2006-03-04 01:30:59Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -288,7 +288,7 @@ sub create_http_request
     $req->header(Host => $job->notes('host_name'));
 
     # Give the handler a chance to munge with the request
-    $kernel->call($session, 'prep_request', $job, $req);
+    $kernel->call($obj->handler_alias, 'prep_request', $job, $req);
 
     return $req;
 }
