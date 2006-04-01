@@ -1,0 +1,163 @@
+=head1 NAME
+
+Xango::Manual::Intro - Learn How To Write Crawlers With Xango
+
+=head1 DECIDE ON BROKER TYPE
+
+There are two types of Xango::Broker -- the "pull" and "push" types.
+The "pull" crawler is implemented as Xango::Broker::Pull, and the "push"
+is implemented as Xango::Broker::Push.
+
+Xango::Broker::Pull crawler periodically "pulls" the jobs that needs to be 
+processed. Xango::Broker::Push crawler waits for jobs to be pushed to the
+queue.
+
+You should decide on the type of crawler to use depending on the application
+that you want to build. If you have a constant pool of jobs that need to be
+processed, then usually the pull model is better. However, if your crawler's
+processing is triggered by an event (for example, a user submits a form that
+contains the URI to crawl) then the push crawler is the way to go.
+
+=head1 IMPLEMENTING THE PULL CRAWLER
+
+A "pull" crawler goes into a loop that periodically checks for new jobs to
+process from a source. If you have a crawler that should be crawling a
+possibly infinite list of jobs, then this is probably the type of crawler
+that you want to use.
+
+  MyHandler->spawn(...);
+  Xango::Broker::Pull->spawn(
+    Alias => 'broker',
+    HandlerAlias => 'handler'
+    ...
+  );
+
+  POE::Kernel->run;
+
+In this scenario, the handler component needs to implement the following
+states:
+
+=over 4
+
+=item apply_policy
+
+apply_policy is called synchronously via POE::Kernel-E<gtl>call() method,
+and accepts the Xango::Job object that is currently being handled. You should
+use this state in your handler to decide if the job is really suitable for
+crawling.
+
+For example, if you want to filter out URLs that contain the word 'credit',
+you can do something like this:
+
+  sub apply_policy
+  {
+    my ($job) = @_[ARG0];
+    return $job->uri !~ /credit/;
+  }
+
+And Xango will stop processing this job.
+
+=item retrieve_jobs
+
+The retrieve_jobs state is called periodically to fetch new jobs to be
+processed. This is probably where you would be accessing a database or such.
+
+In this state, just return a list of jobs:
+
+  package MyHandler;
+  sub retrieve_jobs
+  {
+    # of course, you probably wouldn't be connecting to a database every
+    # time retrieve_jobs is called in reality (too much overhead)
+    my $dbh = DBI->connect(...);
+
+    my @jobs;
+    my $sth = $dbh->prepare("SELECT ....");
+    while ($sth->fetchrow_arrayref) {
+      my $job = Xango::Job->new(uri => $uri, ...);
+      push @jobs, $job;
+    }
+    return @jobs;
+  }
+
+=item handle_response
+
+handle_response() is a state where you should do the actual processing of the
+data that got fetched by Xango. You can do whatever you want in here, 
+for example parsing the HTML, saving the fetched content, etc. The job is
+passed as ARG0.
+
+  sub handle_response
+  {
+    my($response) = @_[ARG0];
+    my $file = '...';
+    open(my $fh, ">$file") or die $!;
+
+    print $fh $response->as_string;
+    close($fh);
+  }
+
+=item finalize_job
+
+This state is called at the end of the processing chain. You should perform
+any cleanup that may be required.
+
+=back 
+
+=head1 IMPLEMENTING THE PUSH CRAWLER
+
+You should use the push crawlers for crawlers that crawl a URL in response to
+an event. For example if you want to make a POE server that accepts lists
+of URL sent in by a user, and only want to crawl the specified URL
+(as opposed to fetching the URLs from a data source yourself), this is the
+crawler type to go.
+
+You define a broker and handler like the pull crawler:
+
+  MyHandler->spawn(...);
+  Xango::Broker::Push->spawn(
+    Alias => 'broker',
+    HandlerAlias => 'handler'
+    ...
+  );
+
+  POE::Kernel->run();
+
+And then you just post to the 'enqueue_job' state from somewhere else:
+
+  # In your code elsewhere...
+  POE::Kernel->post('broker', 'enqueue_job', $job);
+
+=over 4
+
+=item apply_policy
+
+=item handle_response
+
+=item finalize_job
+
+These states are all the same as the pull-parser.
+
+=back
+
+=head1 PERFORMANCE
+
+=head2 CUSTOM HTTP COMPONENT
+
+For maximum performance, you will most likely need to re-write your HTTP
+fetcher component (by default POE::Component::Client::HTTP is used). This is
+due to the fact that, most crawler are daemon that perpetually retrieves
+data, and this requires maximum tuning from the code-writer to reduce the
+memory impact from downloading arbitrary content.
+
+For example, http://xango.razil.jp uses a disk-based variation of 
+POE::Component::Client::HTTP that writes data as soon as it can to
+minimize the memory usage.
+
+For casual users, though, this may not be a problem.
+
+=head1 AUTHOR
+
+Copyright (c) 2005-2006 Daisuke Maki E<lt>dmaki@cpan.org<E<gt>
+
+=cut

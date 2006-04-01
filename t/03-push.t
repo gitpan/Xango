@@ -10,7 +10,7 @@ eval { check_prereqs() };
 if ($@) {
     plan skip_all => $@;
 }
-plan tests => 3;
+plan tests => 8;
 
 my $handler = XangoTest::SimplePush::Handler->spawn();
 my $broker  = XangoTest::SimplePush::Broker->spawn();
@@ -18,7 +18,8 @@ my $broker  = XangoTest::SimplePush::Broker->spawn();
 # States to verify
 my @states = qw(handle_http_response);
 my @jobs = (
-    Xango::Job->new(uri => URI->new('http://www.cpan.org'))
+    Xango::Job->new(uri => URI->new('http://www.cpan.org')),
+    Xango::Job->new(uri => URI->new('http://search.cpan.org')),
 );
 
 foreach my $job (@jobs) {
@@ -33,6 +34,7 @@ foreach my $job (@jobs) {
     my $response = $data->notes('http_response');
     ok($data);
     ok($response);
+    is($data->uri, $job->uri, "URI ok");
     ok(eval { $response->is_success }, "Response is a success");
 }
 

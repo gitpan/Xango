@@ -3,6 +3,10 @@ Changes
 
 Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
 
+1.03 - 01 Apr 2006
+ - Fix the push crawler: it was spawning way too many http connections
+   when a massive amount of URI is enqueue'd to the broker.
+
 1.02 - 04 Feb 2006 
  - properly call 'prep_request' on the handler, not the broker session
 

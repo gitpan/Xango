@@ -18,7 +18,7 @@ sub states
         next unless $object_states->[$i * 2] == $self;
 
         push @{$object_states->[$i * 2 + 1]}, 
-            qw(enqueue_job flush_queue);
+            qw(enqueue_job flush_pending);
     }
     return %states;
 }
@@ -35,7 +35,7 @@ sub spawn_http_comp
     my($kernel, $obj) = @_[KERNEL, OBJECT];
 
     $obj->can('SUPER::spawn_http_comp')->(@_);
-    $kernel->yield('flush_queue');
+    $kernel->yield('flush_pending');
 }
 
 sub enqueue_job
@@ -51,24 +51,55 @@ sub enqueue_job
     if (! eval { $job->uri->isa('URI') })  {
         $job->uri(URI->new($job->uri));
     }
+    my $q = $obj->job_queue;
+    push @$q, $job;
 
-    my $fetchers = $obj->fetchers;
-    if (keys %$fetchers) {
-        $kernel->call($session, 'dispatch_to_lightest_load', $job);
-    } else {
-        my $q = $obj->job_queue;
-        push @$q, $job;
+    if (! $obj->{FLUSH_PENDING}++) {
+        $kernel->post($session, 'flush_pending');
     }
 }
 
-sub flush_queue
+sub flush_pending
 {
     my($kernel, $session, $obj) = @_[KERNEL, SESSION, OBJECT];
+
+    delete $obj->{FLUSH_PENDING};
+
+    my $fetchers = $obj->fetchers;
+
     my $q = $obj->job_queue;
-    for my $job (@$q) {
-        $kernel->call($session, 'dispatch_to_lightest_load', $job);
+    for (my $i = 0; $i < @$q; $i++) {
+        # Only allow 1 job per fetcher
+        my $job = $q->[$i];
+        my $dispatched = 0;
+
+        while (my($fetcher_id, $data) = each %$fetchers) {
+            my $job_count = keys %{$data->{jobs}};
+            next if ($job_count);
+
+            $dispatched = 1;
+            $kernel->call($session, 'dispatch_to_lightest_load', $job);
+            splice(@$q, $i, 1);
+            $i--;
+
+            last;
+        }
+
+        last if ! $dispatched;
     }
-    @$q = ();
+}
+
+sub finalize_job
+{
+    my($kernel, $session, $obj, $job) = @_[KERNEL, SESSION, OBJECT, ARG0];
+
+    $obj->can('SUPER::finalize_job')->(@_);
+
+    my $q = $obj->job_queue;
+    if (@$q > 0) {
+        Xango::debug("[finalize_job]: We have more jobs. Trying to flush...");
+        $kernel->yield('flush_pending');
+    }
 }
 
 1;
@@ -109,9 +140,7 @@ the list of jobs to be processed
 
 Enqueues a job to be processed.
 
-=head2 flush_queue
-
-Flushes the job queue.
+=head2 flush_pending
 
 =head1 SEE ALSO
 
