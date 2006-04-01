@@ -1,4 +1,4 @@
-# $Id: Push.pm 93 2005-10-17 18:07:52Z daisuke $
+# $Id: Push.pm 101 2006-04-01 13:49:04Z daisuke $
 #
 # Copyright (c) 2005 Daisule Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -141,6 +141,10 @@ the list of jobs to be processed
 Enqueues a job to be processed.
 
 =head2 flush_pending
+
+flushes pending jobs, if possible
+
+=head2 finalize_job
 
 =head1 SEE ALSO
 

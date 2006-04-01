@@ -41,7 +41,7 @@ states:
 
 =item apply_policy
 
-apply_policy is called synchronously via POE::Kernel-E<gtl>call() method,
+apply_policy is called synchronously via POE::Kernel-E<gt>call() method,
 and accepts the Xango::Job object that is currently being handled. You should
 use this state in your handler to decide if the job is really suitable for
 crawling.
