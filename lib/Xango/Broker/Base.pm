@@ -40,7 +40,22 @@ sub initialize
         $self->_load_config($config);
     }
 
-    # Set values that must be set
+    # Set values provided by %args. This overrides the config file
+    $self->{ALIAS}                = $args{Alias} if exists $args{Alias};
+    $self->{DNS_CACHE_ARGS}       = $args{DnsCacheArgs}
+        if exists $args{DnsCacheArgs};
+    $self->{DNS_CACHE_CLASS}      = $args{DnsCacheClass}
+        if exists $args{DnsCacheClass};
+    $self->{DNS_CACHE_ARGS_DEREF} = $args{DnsCacheArgsDeref}
+        if $args{DnsCacheArgsDeref};
+    $self->{DNS_COMP_ALIAS}       = $args{DnsCompAlias} if $args{DnsCompAlias};
+    $self->{DNS_COMP_CLASS}       = $args{DnsCompClass} if $args{DnsCompClass};
+    $self->{HANDLER_ALIAS}        = $args{HandlerAlias} if $args{HandlerAlias};
+    $self->{HTTP_COMP_CLASS}      = $args{HttpCompClass} if $args{HttpCompClass};
+    $self->{HTTP_COMP_ARGS}       = $args{HttpCompArgs} if $args{HttpCompArgs};
+    $self->{MAX_HTTP_COMP}        = $args{MaxHttpComp} if $args{MaxHttpComp};
+
+    # Set defaults.
     $self->{ALIAS}             ||= 'broker';
     $self->{CONFIG_FILE}       ||= undef;
     $self->{DNS_CACHE_CLASS}   ||= DEFAULT_DNS_CACHE_CLASS;

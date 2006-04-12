@@ -3,6 +3,12 @@ Changes
 
 Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
 
+1.05 - 12 Apr 2006
+ - Fix constructor to check for parameters passed to it (other than the
+   config file). Now Xango::Broker::* constructors properly use
+   config file as the defaults, and then let other parameters override 
+   those values.
+
 1.04 - 01 Apr 2006
  - Add missing SimplePull.pm for testing (Reported by Tatsuhiko Miyagawa)
  - Fix POD

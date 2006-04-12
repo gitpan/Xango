@@ -13,7 +13,7 @@ use POSIX();
 
 BEGIN
 {
-    $VERSION = '1.04';
+    $VERSION = '1.05';
 
     my $default_from_env = sub {
         my($var, $default) = @_;

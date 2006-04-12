@@ -13,10 +13,16 @@ use POE;
 sub initialize
 {
     my $self = shift;
+    my %args = @_;
+    $self->SUPER::initialize(%args);
     $self->{DISPATCH_ALARM}       = undef;
-    $self->{JOB_RETRIEVAL_DELAY}  = 30;
-    $self->{MAX_SILENCE_INTERVAL} = 900;
-    $self->SUPER::initialize(@_);
+    $self->{JOB_RETRIEVAL_DELAY}  = $args{JobRetrievalDelay}
+        if $args{JobRetrievalDelay};
+    $self->{MAX_SILENCE_INTERVAL} = $args{MaxSilenceInterval}
+        if $args{MaxSilenceInterval};
+
+    $self->{JOB_RETRIEVAL_DELAY}  ||= 30;
+    $self->{MAX_SILENCE_INTERVAL} ||= 900;
 }
 
 sub states
