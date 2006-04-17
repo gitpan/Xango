@@ -1,4 +1,4 @@
-# $Id: Base.pm 99 2006-03-04 01:30:59Z daisuke $
+# $Id: Base.pm 103 2006-04-17 06:09:55Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -54,10 +54,13 @@ sub initialize
     $self->{HTTP_COMP_CLASS}      = $args{HttpCompClass} if $args{HttpCompClass};
     $self->{HTTP_COMP_ARGS}       = $args{HttpCompArgs} if $args{HttpCompArgs};
     $self->{MAX_HTTP_COMP}        = $args{MaxHttpComp} if $args{MaxHttpComp};
+    $self->{ENABLE_DNS_CACHE}     = exists $args{EnableDnsCache} ?
+        $args{EnableDnsCache} : 1;
 
     # Set defaults.
     $self->{ALIAS}             ||= 'broker';
     $self->{CONFIG_FILE}       ||= undef;
+    $self->{DNS_CACHE}         ||= undef;
     $self->{DNS_CACHE_CLASS}   ||= DEFAULT_DNS_CACHE_CLASS;
     $self->{DNS_CACHE_ARGS}    ||= DEFAULT_DNS_CACHE_ARGS;
     if (!exists $self->{DNS_CACHE_ARGS_DEREF}) {
@@ -187,8 +190,11 @@ sub _start
     # Spawn a DNS component to resolve hostnames
     $kernel->call($session, 'spawn_dns_comp');
 
-    my $cache = $kernel->call($session, 'create_dns_cache');
-    $obj->attr(dns_cache => $cache);
+    # create DNS cache, if specified.
+    if ($obj->enable_dns_cache) {
+        my $cache = $kernel->call($session, 'create_dns_cache');
+        $obj->attr(dns_cache => $cache);
+    }
 
     $kernel->call(
         $session,
@@ -377,39 +383,42 @@ sub dispatch_http_fetch
 
     # Resolve this URI first (check flags for sanity. we don't want to
     # get into an infinite loop or something)
-    if ($uri->host =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/) {
-        $job->notes(host_name => $uri->host);
-        $job->notes(host_ip   => $uri->host);
-    } elsif (! $job->notes('dns_resolved') &&
-        $uri->host !~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/) {
-        my $host     = $uri->host;
-        my $dnscache = $obj->dns_cache();
-        my $host_ip  = $dnscache->get($host);
-
-        if ($host_ip) {
-            $job->notes(dns_resolved => 1);
-        } else {
-            $kernel->call($session, 'register_dns_request', $host, $job);
-            return $kernel->post(
-                $obj->dns_comp_alias,
-                'resolve',
-                'handle_dns_response',
-                $host
-            );
-        }
-
-        # We cache failed responses as well. Check if this is such case
-        if ($host_ip eq '0.0.0.0') {
-            my $err = "Could not connect to " .
-                "$uri (No address associated with $host (CACHED))";
-            return $kernel->yield('fake_error_response', $job, $err);
-        }
-
-        $job->notes(host_name => $host);
-        $job->notes(host_ip   => $host_ip);
-    }
 
     my $host_ip = $job->notes('host_ip');
+    
+    if (!$host_ip) {
+        if ($uri->host =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/) {
+            $host_ip = $uri->host;
+            $job->notes(host_name => $uri->host);
+            $job->notes(host_ip   => $uri->host);
+        } elsif (! $job->notes('dns_resolved') &&
+            $uri->host !~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/) {
+            my $host     = $uri->host;
+            my $dnscache = $obj->dns_cache();
+            $host_ip  = $dnscache ? $dnscache->get($host) : undef;
+    
+            if ($host_ip) {
+                $job->notes(dns_resolved => 1);
+                $job->notes(host_name => $host);
+                $job->notes(host_ip   => $host_ip);
+            } else {
+                $kernel->call($session, 'register_dns_request', $host, $job);
+                return $kernel->post(
+                    $obj->dns_comp_alias,
+                    'resolve',
+                    'handle_dns_response',
+                    $host
+                );
+            }
+
+            # We cache failed responses as well. Check if this is such case
+            if ($host_ip eq '0.0.0.0') {
+                my $err = "Could not connect to " .
+                    "$uri (No address associated with $host (CACHED))";
+                return $kernel->yield('fake_error_response', $job, $err);
+            }
+        }
+    }
 
     # At this point, either the uri that was requested was already an IP
     # address, or we have successfully resolved the hostname.
@@ -561,8 +570,11 @@ sub handle_dns_response
 
         if ($ip) {
             Xango::debug("[handle_dns_response]: $request_address resolved to $ip.");
-            $obj->dns_cache->set($request_address, $ip);
+            $obj->dns_cache->set($request_address, $ip)
+                if $obj->dns_cache;
             foreach my $job (@$requests) {
+                $job->notes(host_name => $request_address);
+                $job->notes(host_ip   => $ip);
                 $kernel->yield('dispatch_http_fetch', $job);
             }
             return 1; # yay
@@ -596,8 +608,7 @@ sub handle_dns_response
             );
         }
     }
-    my $dnscache = $obj->dns_cache;
-    $dnscache->set($request_address, '0.0.0.0');
+    $obj->dns_cache->set($request_address, '0.0.0.0') if $obj->dns_cache;
     return undef;
 }
 
@@ -647,6 +658,12 @@ The POE session alias for the broker.
 
 Path to the config file used by Xango::Config. Values in this file will be 
 used as the default value for other variables. 
+
+=item EnableDnsCache
+
+Flag to tell Xango if DNS caching should be used. By default it's on.
+Turn this off for short-running Xango process that want to avoid
+repeated DNS failures caused by a cached DNS query failure.
 
 =item DnsCacheClass (scalar)
 

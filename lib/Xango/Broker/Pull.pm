@@ -1,4 +1,4 @@
-# $Id: Pull.pm 96 2005-10-25 02:47:06Z daisuke $
+# $Id: Pull.pm 102 2006-04-17 06:04:21Z daisuke $
 #
 # Copyright (c) 2005 Daisule Maki <dmaki@cpan.org>
 # All rights reserved.

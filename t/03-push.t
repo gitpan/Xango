@@ -13,7 +13,9 @@ if ($@) {
 plan tests => 8;
 
 my $handler = XangoTest::SimplePush::Handler->spawn();
-my $broker  = XangoTest::SimplePush::Broker->spawn();
+my $broker  = XangoTest::SimplePush::Broker->spawn(
+    DnsCacheClass => 'Cache::MemoryCache'
+);
 
 # States to verify
 my @states = qw(handle_http_response);

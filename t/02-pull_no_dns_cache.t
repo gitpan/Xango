@@ -15,7 +15,7 @@ my @jobs = (Xango::Job->new(uri => URI->new('http://www.cpan.org')));
 my $handler = XangoTest::SimplePull::Handler->spawn(jobs => [@jobs]);
 
 my $broker  = XangoTest::SimplePull::Broker->spawn(
-    DnsCacheClass => 'Cache::MemoryCache'
+    EnableDnsCache => 0,
 );
 
 # States to verify

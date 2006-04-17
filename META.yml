@@ -1,6 +1,6 @@
 ---
 name: Xango
-version: 1.05
+version: 1.06
 author:
   - |-
     Copyright 2005 Daisuke Maki E<lt>dmaki@cpan.orgE<gt>. All rights reserved.
@@ -8,6 +8,7 @@ author:
 abstract: Event Based High Performance Web Crawler Framework
 license: perl
 requires:
+  Cache::Cache: 0
   HTTP::Request: 0
   HTTP::Response: 0
   Log::Dispatch: 0
@@ -18,7 +19,7 @@ build_requires:
 provides:
   Xango:
     file: lib/Xango.pm
-    version: 1.05
+    version: 1.06
   Xango::Broker:
     file: lib/Xango/Broker.pm
   Xango::Broker::Base:

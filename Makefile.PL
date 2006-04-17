@@ -5,6 +5,7 @@ WriteMakefile
           'DISTNAME' => 'Xango',
           'VERSION_FROM' => 'lib/Xango.pm',
           'PREREQ_PM' => {
+                           'Cache::Cache' => '0',
                            'HTTP::Request' => '0',
                            'HTTP::Response' => '0',
                            'Log::Dispatch' => '0',

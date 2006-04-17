@@ -14,7 +14,9 @@ META.yml
 README
 t/01-sanity.t
 t/02-pull.t
+t/02-pull_no_dns_cache.t
 t/03-push.t
+t/03-push_no_dns_cache.t
 t/99-pod-coverage.t
 t/99-pod.t
 t/lib/XangoTest/BaseHandler.pm

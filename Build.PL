@@ -1,5 +1,5 @@
 #!perl
-# $Id: Build.PL 99 2006-03-04 01:30:59Z daisuke $
+# $Id: Build.PL 102 2006-04-17 06:04:21Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -8,6 +8,7 @@ use strict;
 use Module::Build;
 
 my %requires = (
+    'Cache::Cache'   => 0,
     'HTTP::Request'  => 0,
     'HTTP::Response' => 0,
     'Log::Dispatch'  => 0,
@@ -18,7 +19,6 @@ my %requires = (
 my @ask;
 my @optional = (
     qw(POE::Component::Client::DNS POE::Component::Client::HTTP),
-    qw(Cache::FileCache)
 );
 foreach my $module(@optional) {
     my $r = Module::Build->check_installed_status($module, 0);

@@ -3,6 +3,11 @@ Changes
 
 Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
 
+1.06 - 17 Apr 2006
+ - Add EnableDnsCache argument so that you can enable/disable DNS
+   caching. This is on by default.
+ - Make Cache::Cache a requirement. 
+
 1.05 - 12 Apr 2006
  - Fix constructor to check for parameters passed to it (other than the
    config file). Now Xango::Broker::* constructors properly use
