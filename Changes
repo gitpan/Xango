@@ -3,6 +3,11 @@ Changes
 
 Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
 
+1.07 - 26 Apr 2006
+ - Hiroyuki Nishimura makes me realize that there's no way to shutdown
+   a Push broker. Also added a shutdown_broker state, so you can easily
+   shutdown the broker.
+
 1.06 - 17 Apr 2006
  - Add EnableDnsCache argument so that you can enable/disable DNS
    caching. This is on by default.

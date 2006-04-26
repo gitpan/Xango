@@ -35,6 +35,7 @@ sub handle_response
     my($kernel, $obj, $job) = @_[KERNEL, OBJECT, ARG0];
 
     $obj->job_result->{$job} = Storable::dclone($job);
+    $kernel->call('broker', 'shutdown_broker');
 }
 
 1;

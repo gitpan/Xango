@@ -137,6 +137,7 @@ sub states
                 'spawn_dns_comp',
                 'spawn_http_comp',
                 'unregister_http_request',
+                'shutdown_broker',
             ]
         ]
     );
@@ -209,6 +210,12 @@ sub _stop
     Xango::debug("[_stop]: broker session stopping.");
 
     $kernel->alias_remove($obj->alias);
+}
+
+sub shutdown_broker
+{
+    my($obj) = @_[OBJECT];
+    $obj->shutdown(1);
 }
 
 sub spawn_dns_comp
@@ -777,6 +784,11 @@ Spawns the component to resolve DNS lookups.
 =head2 signal_http_comp
 
 Send a signal to the specified HTTP component.
+
+=head2 shutdown_broker
+
+Sets the shutdown flag on the broker. The broker will attempt to shutdown
+gracefully.
 
 =head2 handle_dns_response
 

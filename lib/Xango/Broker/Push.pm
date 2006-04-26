@@ -64,6 +64,7 @@ sub flush_pending
     my($kernel, $session, $obj) = @_[KERNEL, SESSION, OBJECT];
 
     delete $obj->{FLUSH_PENDING};
+    return if $obj->shutdown;
 
     my $fetchers = $obj->fetchers;
 
