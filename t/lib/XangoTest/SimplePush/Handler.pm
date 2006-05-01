@@ -1,4 +1,4 @@
-# $Id: Handler.pm 84 2005-10-14 08:13:37Z daisuke $
+# $Id: Handler.pm 105 2006-04-26 09:12:24Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.

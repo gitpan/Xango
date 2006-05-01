@@ -14,7 +14,7 @@ plan tests => 8;
 
 my $handler = XangoTest::SimplePush::Handler->spawn();
 my $broker  = XangoTest::SimplePush::Broker->spawn(
-    DnsCacheClass => 'Cache::MemoryCache'
+    DnsCacheClass => 'Cache::MemoryCache',
 );
 
 # States to verify

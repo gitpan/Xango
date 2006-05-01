@@ -3,6 +3,10 @@ Changes
 
 Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
 
+1.08 - 01 May 2006
+ - Implemented the "Loop" parameter in the Push crawler. This will allow
+   you to keep the broker session even without a pending job queue.
+
 1.07 - 26 Apr 2006
  - Hiroyuki Nishimura makes me realize that there's no way to shutdown
    a Push broker. Also added a shutdown_broker state, so you can easily
