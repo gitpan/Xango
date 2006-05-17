@@ -1,4 +1,4 @@
-# $Id: Base.pm 105 2006-04-26 09:12:24Z daisuke $
+# $Id: Base.pm 107 2006-05-17 09:01:19Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -78,12 +78,22 @@ sub initialize
     $self->{SHUTDOWN}            = 0;  # Non-configurable
     $self->{STRICT_JOB_TYPE}   ||= 'Xango::Job';
     $self->{UNDEF_ON_FINALIZE} ||= 0;
+    $self->{STATISTICS}        ||= {};
 
     my $k_munge;
     foreach my $k (keys %args) {
         $k_munge = $k;
         $k_munge =~ s/([a-z])([A-Z])/$1_$2/g;
         $self->{uc ($k_munge)} = $args{$k};
+    }
+
+    $self->{AUTO_THROTTLE} ||= 0;
+    if ($self->{AUTO_THROTTLE}) {
+        require Data::Average::BoundedExpires;
+        $self->{THROTTLE_DATA} ||= Data::Average::BoundedExpires->new(
+            max => 100,
+            expires_in => 60
+        );
     }
 }
 
@@ -101,6 +111,7 @@ sub _load_config
         $c = uc $c;
         $self->{$c} = $config->param($p);
     };
+    $set->('AutoThrottle');
     $set->('DnsCacheClass');
     $set->('DnsCacheArgs');
     $set->('DnsCacheArgsDeref');
@@ -194,6 +205,7 @@ sub _start
     # create DNS cache, if specified.
     if ($obj->enable_dns_cache) {
         my $cache = $kernel->call($session, 'create_dns_cache');
+        $cache->clear();
         $obj->attr(dns_cache => $cache);
     }
 
@@ -349,20 +361,67 @@ sub unregister_http_request
     my $fetchers = $obj->fetchers();
     my $data     = $fetchers->{$fetcher_id};
 
-    $data->{last_request_time} = time();
-    delete $data->{jobs}->{$job->id};
+    if ($data) {
+        $data->{last_request_time} = time();
+        delete $data->{jobs}->{$job->id};
+    }
 }
 
 sub dispatch_to_lightest_load
 {
     my($kernel, $session, $obj, $job) = @_[KERNEL, SESSION, OBJECT, ARG0];
 
+    my %fetchers = %{ $obj->fetchers };
+
+    # throttle if necessary
+    if ($obj->auto_throttle && $obj->throttle_data->length > 10) {
+        my $avg = $obj->throttle_data->avg;
+
+        my $max_http_comp = $obj->max_http_comp;
+        if ($avg < 1) {
+            my $target =
+                $avg < 0.5 ? int($max_http_comp * 0.1) :
+                $avg < 0.8 ? int($max_http_comp * 0.2) :
+                $avg < 0.9 ? int($max_http_comp * 0.5) :
+                $max_http_comp;
+
+            # count fetchers that aren't marked as to be deleted
+            my @active = grep { ! $_->{shutdown} } keys %fetchers;
+            if (@active > $max_http_comp) {
+                # randomly select a few fetchers and mark them as to be
+                # shutdown soon
+                for my $i (1..$max_http_comp - scalar @active) {
+                    $fetchers{ $active[rand(@active)]->{id} }->{shutdown}++;
+                }
+            }
+        } else {
+            if ($max_http_comp > keys %fetchers) {
+                # spawn more, if we've throttled it down
+                # only spawn up to 1/10 of the max_http_comp size
+
+                my $missing  = $max_http_comp - keys %fetchers;
+                my $to_spawn =
+                    $max_http_comp <= 10 ? 1 :
+                    $missing < int($max_http_comp / 10) ? $missing :
+                    int($max_http_comp / 10);
+
+                # synchronous, cause we might accidentally spawn more
+                $kernel->call($session, 'spawn_http_comp', $to_spawn);
+            }
+        }
+    }
+
     # Find the http component with the least load. 
     my $min = undef;
     my $fetcher_id;
 
-    while (my($id, $data) = each %{$obj->fetchers}) {
+    while (my($id, $data) = each %fetchers) {
         my $size = scalar keys %{$data->{jobs}};
+
+        if ($data->{shutdown}) {
+            delete $fetchers{$id} if $size == 0;
+            next;
+        }
         if (!defined $min || $min > $size) {
             $fetcher_id = $id;
             $min = $size;
@@ -403,6 +462,10 @@ sub dispatch_http_fetch
             my $host     = $uri->host;
             my $dnscache = $obj->dns_cache();
             $host_ip  = $dnscache ? $dnscache->get($host) : undef;
+            if ($host eq 'localhost') {
+                $host_ip = '127.0.0.1';
+                $dnscache->set($host, $host_ip) if $dnscache;
+            }
     
             if ($host_ip) {
                 $job->notes(dns_resolved => 1);
@@ -481,6 +544,14 @@ sub handle_http_response
         $request->uri($uri);
     }
     $response->request($request);
+
+    # Check for possibile case of being throttled. 400 or 408
+    if ($obj->auto_throttle) {
+        # if we're auto throttling, and we've reduced the number of
+        # components thus far, c
+
+        $obj->throttle_data->add($response->code =~ /^40(?:0|8)/ ? 1 : 0);
+    }
 
     $kernel->post($obj->handler_alias, 'handle_response', $job) or
         die "Failed to post event 'handle_response' to '" . $obj->handler_alias . "'";
@@ -808,11 +879,12 @@ Handle a given signal. The signal name is in ARG0.
 
 =head1 SEE ALSO
 
-L<Xango::Broker::Pull> L<Xango::Broker::Push>
+L<Xango::Broker::Pull|Xango::Broker::Pull> L<Xango::Broker::Push|Xango::Broker::Push>
 
 =head1 AUTHOR
 
-Copyright (c) 2005 Daisuke Maki E<lt>dmaki@cpan.orgE<gt>. All rights reserved.
+Copyright (c) 2005-2006 Daisuke Maki E<lt>dmaki@cpan.orgE<gt>.
+All rights reserved.
 Development funded by Brazil, Ltd. E<lt>http://b.razil.jpE<gt>
 
 =cut 

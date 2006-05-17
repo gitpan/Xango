@@ -1,4 +1,4 @@
-# $Id: Push.pm 106 2006-05-01 02:33:25Z daisuke $
+# $Id: Push.pm 107 2006-05-17 09:01:19Z daisuke $
 #
 # Copyright (c) 2005 Daisule Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -105,6 +105,7 @@ sub finalize_job
     my($kernel, $session, $obj, $job) = @_[KERNEL, SESSION, OBJECT, ARG0];
 
     $obj->can('SUPER::finalize_job')->(@_);
+    return if $obj->shutdown;
 
     my $q = $obj->job_queue;
     if (@$q > 0) {
@@ -114,13 +115,23 @@ sub finalize_job
         $obj->{LOOP_ALARM} = $kernel->alarm_set('busy_loop', time() + 30)
     }
 
-    $kernel->alarm_set('fake', time() + 65) unless $obj->{FAKE}++;
+    $kernel->yield('fake');
 }
 
 sub busy_loop
 {
     # set another alarm
+    return if $_[OBJECT]->shutdown;
     $_[OBJECT]->{LOOP_ALARM} = $_[KERNEL]->alarm_set('busy_loop', time() + 30);
+}
+
+sub shutdown_broker
+{
+    my($kernel, $obj, $heap) = @_[KERNEL, OBJECT, HEAP];
+
+    $obj->can('SUPER::shutdown_broker')->(@_);
+    $kernel->alarm_remove($heap->{LOOP_ALARM});
+    delete $heap->{LOOP_ALARM};
 }
 
 1;
@@ -177,6 +188,12 @@ Enqueues a job to be processed.
 flushes pending jobs, if possible
 
 =head2 finalize_job
+
+=head2 busy_loop
+
+Dummy state to keep the broker working until shutdown_broker is called
+
+=head2 shutdown_broker
 
 =head1 SEE ALSO
 

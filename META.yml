@@ -3,12 +3,16 @@ name: Xango
 version: 1.08
 author:
   - |-
-    Copyright 2005 Daisuke Maki E<lt>dmaki@cpan.orgE<gt>. All rights reserved.
+    Copyright 2005-2006 Daisuke Maki E<lt>dmaki@cpan.orgE<gt>.
+    All rights reserved.
     Development funded by Brazil, Ltd. E<lt>http://b.razil.jpE<gt>
 abstract: Event Based High Performance Web Crawler Framework
 license: perl
+resources:
+  license: http://dev.perl.org/licenses/
 requires:
   Cache::Cache: 0
+  Data::Average: '>= 0.02'
   HTTP::Request: 0
   HTTP::Response: 0
   Log::Dispatch: 0
@@ -32,4 +36,7 @@ provides:
     file: lib/Xango/Config.pm
   Xango::Job:
     file: lib/Xango/Job.pm
-generated_by: Module::Build version 0.2612
+generated_by: Module::Build version 0.28
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2

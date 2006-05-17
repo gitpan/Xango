@@ -1,4 +1,4 @@
-# $Id: Xango.pm 106 2006-05-01 02:33:25Z daisuke $
+# $Id: Xango.pm 107 2006-05-17 09:01:19Z daisuke $
 #
 # Copyright (c) 2005 Daisuke Maki <dmaki@cpan.org>
 # All rights reserved.
@@ -186,7 +186,8 @@ L<Xango::Broker::Push>
 
 =head1 AUTHOR
 
-Copyright 2005 Daisuke Maki E<lt>dmaki@cpan.orgE<gt>. All rights reserved.
+Copyright 2005-2006 Daisuke Maki E<lt>dmaki@cpan.orgE<gt>.
+All rights reserved.
 Development funded by Brazil, Ltd. E<lt>http://b.razil.jpE<gt>
 
 =cut

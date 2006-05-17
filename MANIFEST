@@ -2,6 +2,7 @@ Build.PL
 Changes
 lib/Xango.pm
 lib/Xango/Broker.pm
+lib/Xango/Broker/.Base.pm.swp
 lib/Xango/Broker/Base.pm
 lib/Xango/Broker/Pull.pm
 lib/Xango/Broker/Push.pm
@@ -17,6 +18,7 @@ t/02-pull.t
 t/02-pull_no_dns_cache.t
 t/03-push.t
 t/03-push_no_dns_cache.t
+t/04-throttle.t
 t/99-pod-coverage.t
 t/99-pod.t
 t/lib/XangoTest/BaseHandler.pm
@@ -26,4 +28,8 @@ t/lib/XangoTest/SimplePull/Handler.pm
 t/lib/XangoTest/SimplePush.pm
 t/lib/XangoTest/SimplePush/Broker.pm
 t/lib/XangoTest/SimplePush/Handler.pm
+t/lib/XangoTest/ThrottlePush/Broker.pm
+t/lib/XangoTest/ThrottlePush/Server.pm
 t/lib/XangoTest/Util.pm
+t/throttle_server.pl
+tools/checkreqs.pl

@@ -3,6 +3,18 @@ Changes
 
 Except where noted, all changes made by Daisuke Maki <dmaki@cpan.org>
 
+1.08_01 - 16 May 2006
+ - Add clear() call to the DNS cache on startup. On systems with prolonged
+   process life time, it's likely that the DNS cache is holding bad data,
+   so we might as well reinitialize.
+ - add tools/checkreqs.pl and custom Makefile.PL
+ - Fix Push.pm so that shutdown_broker state kills alarms.
+
+ [EXPERIMETAL]
+ - Try to work with servers that send 400/408 upon too many connections
+   (the sysadmins must hate me) by gracefully reducing the number of
+   HTTP fetchers upon encountering those return status
+
 1.08 - 01 May 2006
  - Implemented the "Loop" parameter in the Push crawler. This will allow
    you to keep the broker session even without a pending job queue.

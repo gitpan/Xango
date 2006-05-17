@@ -87,6 +87,6 @@ SEE ALSO
     POE Xango::Manual::Intro Xango::Broker::Pull Xango::Broker::Push
 
 AUTHOR
-    Copyright 2005 Daisuke Maki <dmaki@cpan.org>. All rights reserved.
+    Copyright 2005-2006 Daisuke Maki <dmaki@cpan.org>. All rights reserved.
     Development funded by Brazil, Ltd. <http://b.razil.jp>
 
